@@ -1,0 +1,6 @@
+.env
+*.gallery_generator.env
+.DS_Store
+thumbnails/
+.htpasswd
+.htaccess
