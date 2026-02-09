@@ -66,19 +66,23 @@ cp .env.example ~/.gallery_generator.env
 # Edit ~/.gallery_generator.env with your values
 ```
 
-| Variable | Required | Description |
-|---|---|---|
-| `GALLERY_SSH_USER` | Yes | SSH username for the remote host |
-| `GALLERY_REMOTE_DOMAIN` | Yes | Domain of the remote server |
-| `GALLERY_REMOTE_BASE_PATH` | No | Base path on the server (default: `/home/$GALLERY_SSH_USER/$GALLERY_REMOTE_DOMAIN`) |
-| `GALLERY_TIP_URL` | No | URL for a tip/support button on galleries |
-| `GALLERY_ASSETS_DIR` | No | Custom path to PHP/CSS assets |
+| Variable                   | Required | Description                                                                         |
+|----------------------------|----------|-------------------------------------------------------------------------------------|
+| `GALLERY_SSH_USER`         | Yes      | SSH username for the remote host                                                    |
+| `GALLERY_REMOTE_DOMAIN`    | Yes      | Domain of the remote server                                                         |
+| `GALLERY_REMOTE_BASE_PATH` | No       | Base path on the server (default: `/home/$GALLERY_SSH_USER/$GALLERY_REMOTE_DOMAIN`) |
+| `GALLERY_TIP_URL`          | No       | URL for a tip/support button on galleries                                           |
+| `GALLERY_ASSETS_DIR`       | No       | Custom path to PHP/CSS assets                                                       |
 
 ## Usage
 
 ```sh
-gallery_generator <folder_path> <gallery_name> <username> <password>
+gallery_generator [--overwrite] <folder_path> <gallery_name> <username> <password>
 ```
+
+**Options:**
+
+- `--overwrite` — Remove the existing remote gallery before deploying (replaces all files)
 
 **Arguments:**
 
@@ -92,6 +96,9 @@ gallery_generator <folder_path> <gallery_name> <username> <password>
 ```sh
 # Generate a gallery from vacation photos
 gallery_generator ./vacation-pics vacation-2026 guest secretpass
+
+# Replace an existing gallery with new photos
+gallery_generator --overwrite ./vacation-pics vacation-2026 guest secretpass
 
 # With a tip button
 export GALLERY_TIP_URL="https://account.venmo.com/u/yourname"

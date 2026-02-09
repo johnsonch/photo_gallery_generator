@@ -9,10 +9,14 @@ set -euo pipefail
 
 usage() {
     cat <<'USAGE'
-Usage: gallery_generator.sh <folder_path> <gallery_name> <username> <password>
+Usage: gallery_generator.sh [--overwrite] <folder_path> <gallery_name> <username> <password>
 
 Generate a password-protected photo gallery from a folder of images and deploy
 it to a remote server via SSH/rsync.
+
+Options:
+  --overwrite   Remove the existing remote gallery before deploying.
+                Replaces all files on the server for this gallery.
 
 Arguments:
   folder_path   Path to a local folder containing images (jpg, jpeg, png, gif)
@@ -47,6 +51,9 @@ Examples:
   export GALLERY_REMOTE_DOMAIN=photos.example.com
   ./gallery_generator.sh ./vacation-pics vacation-2026 guest secretpass
 
+  # Overwrite an existing gallery with new photos
+  ./gallery_generator.sh --overwrite ./vacation-pics vacation-2026 guest secretpass
+
   # With a tip button
   export GALLERY_TIP_URL="https://account.venmo.com/u/myname"
   ./gallery_generator.sh ./wedding-pics smith-wedding viewer pass123
@@ -57,6 +64,17 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     usage
     exit 0
 fi
+
+# ── Parse flags ──────────────────────────────────────────────────────────────
+
+OVERWRITE=false
+
+while [[ "${1:-}" == --* ]]; do
+    case "$1" in
+        --overwrite) OVERWRITE=true; shift ;;
+        *) echo "Error: Unknown option: $1" >&2; echo "Run '$0 --help' for usage." >&2; exit 1 ;;
+    esac
+done
 
 # ── Source env file if present ────────────────────────────────────────────────
 
@@ -243,6 +261,11 @@ EOF
 echo "Authentication files created successfully"
 
 # ── Deploy to remote server ──────────────────────────────────────────────────
+
+if [[ "$OVERWRITE" == true ]]; then
+    echo "Overwrite enabled — removing existing gallery at ${REMOTE_PATH}..."
+    ssh "$REMOTE_HOST" "rm -rf '${REMOTE_PATH}'"
+fi
 
 ssh "$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}'"
 
