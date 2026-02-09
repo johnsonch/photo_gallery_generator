@@ -32,9 +32,10 @@ git clone https://github.com/yourusername/photo_gallery_generator.git
 cd photo_gallery_generator
 make deps      # check for required tools
 sudo make install
+make setup     # interactive env var configuration
 ```
 
-This installs the `gallery_generator` command to `/usr/local/bin` and assets to `/usr/local/share/gallery_generator/`.
+This symlinks `gallery_generator` into `/usr/local/bin` pointing back to the repo, so the project just needs to stay where you cloned it. Updates via `git pull` take effect immediately.
 
 To uninstall:
 
@@ -76,12 +77,13 @@ cp .env.example ~/.gallery_generator.env
 ## Usage
 
 ```sh
-gallery_generator <folder_path> <username> <password>
+gallery_generator <folder_path> <gallery_name> <username> <password>
 ```
 
 **Arguments:**
 
 - `folder_path` — Path to a local folder containing images
+- `gallery_name` — Name for the gallery on the remote server (used in the URL)
 - `username` — Username for gallery access
 - `password` — Password for gallery access
 
@@ -89,11 +91,11 @@ gallery_generator <folder_path> <username> <password>
 
 ```sh
 # Generate a gallery from vacation photos
-gallery_generator ./vacation-pics guest secretpass
+gallery_generator ./vacation-pics vacation-2026 guest secretpass
 
 # With a tip button
 export GALLERY_TIP_URL="https://account.venmo.com/u/yourname"
-gallery_generator ./wedding-photos viewer pass123
+gallery_generator ./wedding-photos smith-wedding viewer pass123
 ```
 
 ## How It Works

@@ -1,26 +1,22 @@
-PREFIX ?= /usr/local
-BINDIR  = $(PREFIX)/bin
-DATADIR = $(PREFIX)/share/gallery_generator
-
-ASSETS = index.php image_detail.php download.php download_images.php styles.css
+BINDIR  ?= /usr/local/bin
 ENV_FILE = $(HOME)/.gallery_generator.env
+SCRIPT   = $(CURDIR)/gallery_generator.sh
 
 .PHONY: install uninstall deps setup
 
 install:
 	@echo "Installing gallery_generator..."
-	install -d $(BINDIR)
-	install -d $(DATADIR)
-	install -m 755 gallery_generator.sh $(BINDIR)/gallery_generator
-	@for f in $(ASSETS); do \
-		install -m 644 $$f $(DATADIR)/$$f; \
-	done
+	@mkdir -p $(BINDIR)
+	@ln -sf $(SCRIPT) $(BINDIR)/gallery_generator
 	@echo ""
-	@echo "Installed:"
-	@echo "  $(BINDIR)/gallery_generator"
-	@echo "  $(DATADIR)/ (assets)"
+	@echo "Symlinked:"
+	@echo "  $(BINDIR)/gallery_generator -> $(SCRIPT)"
 	@echo ""
 	@echo "Run 'gallery_generator --help' to get started."
+	@echo ""
+	@echo "NOTE: You may need to open a new terminal or run:"
+	@echo "  source ~/.bashrc   # (or ~/.zshrc)"
+	@echo "for the 'gallery_generator' command to be found in your PATH."
 	@if [ ! -f $(ENV_FILE) ]; then \
 		echo ""; \
 		echo "  Tip: run 'make setup' to configure your environment."; \
@@ -29,7 +25,6 @@ install:
 uninstall:
 	@echo "Uninstalling gallery_generator..."
 	rm -f $(BINDIR)/gallery_generator
-	rm -rf $(DATADIR)
 	@echo "Done."
 
 deps:

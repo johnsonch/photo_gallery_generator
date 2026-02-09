@@ -9,13 +9,14 @@ set -euo pipefail
 
 usage() {
     cat <<'USAGE'
-Usage: gallery_generator.sh <folder_path> <username> <password>
+Usage: gallery_generator.sh <folder_path> <gallery_name> <username> <password>
 
 Generate a password-protected photo gallery from a folder of images and deploy
 it to a remote server via SSH/rsync.
 
 Arguments:
   folder_path   Path to a local folder containing images (jpg, jpeg, png, gif)
+  gallery_name  Name for the gallery on the remote server (used in the URL)
   username      Username for HTTP Basic Auth on the gallery
   password      Password for HTTP Basic Auth on the gallery
 
@@ -40,11 +41,11 @@ Examples:
   # Set up env and generate a gallery
   export GALLERY_SSH_USER=myuser
   export GALLERY_REMOTE_DOMAIN=photos.example.com
-  ./gallery_generator.sh ./vacation-pics guest secretpass
+  ./gallery_generator.sh ./vacation-pics vacation-2026 guest secretpass
 
   # With a tip button
   export GALLERY_TIP_URL="https://account.venmo.com/u/myname"
-  ./gallery_generator.sh ./wedding-pics viewer pass123
+  ./gallery_generator.sh ./wedding-pics smith-wedding viewer pass123
 USAGE
 }
 
@@ -83,16 +84,17 @@ REMOTE_BASE_PATH="${GALLERY_REMOTE_BASE_PATH:-/home/${SSH_USER}/${REMOTE_DOMAIN}
 
 # ── Validate arguments ───────────────────────────────────────────────────────
 
-if [[ $# -ne 3 ]]; then
-    echo "Error: Expected 3 arguments, got $#" >&2
-    echo "Usage: $0 <folder_path> <username> <password>" >&2
+if [[ $# -ne 4 ]]; then
+    echo "Error: Expected 4 arguments, got $#" >&2
+    echo "Usage: $0 <folder_path> <gallery_name> <username> <password>" >&2
     echo "Run '$0 --help' for more information." >&2
     exit 1
 fi
 
 FOLDER_PATH="$1"
-USERNAME="$2"
-PASSWORD="$3"
+GALLERY_NAME="$2"
+USERNAME="$3"
+PASSWORD="$4"
 
 if [[ ! -d "$FOLDER_PATH" ]]; then
     echo "Error: Folder does not exist: $FOLDER_PATH" >&2
@@ -101,14 +103,19 @@ fi
 
 # ── Resolve asset directory ──────────────────────────────────────────────────
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Resolve through symlinks so assets are found when invoked via a symlink
+SOURCE="$0"
+while [[ -L "$SOURCE" ]]; do
+    DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
 
 if [[ -n "${GALLERY_ASSETS_DIR:-}" && -d "${GALLERY_ASSETS_DIR}" ]]; then
     ASSETS_DIR="${GALLERY_ASSETS_DIR}"
 elif [[ -f "${SCRIPT_DIR}/index.php" ]]; then
     ASSETS_DIR="${SCRIPT_DIR}"
-elif [[ -d "/usr/local/share/gallery_generator" ]]; then
-    ASSETS_DIR="/usr/local/share/gallery_generator"
 else
     echo "Error: Cannot find gallery assets (PHP/CSS files)." >&2
     echo "Set GALLERY_ASSETS_DIR or run from the source directory." >&2
@@ -151,7 +158,7 @@ echo "All dependencies found."
 # ── Remote server pre-flight checks ──────────────────────────────────────────
 
 REMOTE_HOST="${SSH_USER}@${REMOTE_DOMAIN}"
-REMOTE_PATH="${REMOTE_BASE_PATH}/$(basename "$FOLDER_PATH")"
+REMOTE_PATH="${REMOTE_BASE_PATH}/${GALLERY_NAME}"
 
 echo "Testing connection to ${REMOTE_HOST}..."
 
@@ -247,6 +254,6 @@ echo "Local generated files cleaned up"
 # ── Output gallery URL ───────────────────────────────────────────────────────
 
 echo ""
-echo "Gallery available at: https://${REMOTE_DOMAIN}/$(basename "$FOLDER_PATH")"
+echo "Gallery available at: https://${REMOTE_DOMAIN}/${GALLERY_NAME}"
 echo "Username: $USERNAME"
 echo "Password: $PASSWORD"
