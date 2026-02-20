@@ -1,6 +1,7 @@
 .env
 *.gallery_generator.env
 .DS_Store
+.claude/
 thumbnails/
 .htpasswd
 .htaccess
