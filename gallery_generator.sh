@@ -34,6 +34,10 @@ Optional environment variables:
 
 Environment variables can also be set in ~/.gallery_generator.env
 
+Gallery log:
+  Each deploy is recorded in ~/.gallery_generator.log with the date, URL,
+  username, and password. View it with: cat ~/.gallery_generator.log
+
 Dependencies:
   ImageMagick (magick/convert), rsync, htpasswd (apache2-utils), ssh
 
@@ -251,9 +255,18 @@ echo "Files transferred successfully to $REMOTE_HOST:$REMOTE_PATH"
 rm -rf "$FOLDER_PATH/thumbnails" "$FOLDER_PATH"/*.{php,js,css} "$FOLDER_PATH"/.htaccess "$FOLDER_PATH"/.htpasswd
 echo "Local generated files cleaned up"
 
+# ── Log gallery to local ledger ──────────────────────────────────────────────
+
+GALLERY_LOG="${HOME}/.gallery_generator.log"
+GALLERY_URL="https://${REMOTE_DOMAIN}/${GALLERY_NAME}"
+
+{
+    echo "$(date +%Y-%m-%d)  ${GALLERY_URL}  ${USERNAME}  ${PASSWORD}"
+} >> "$GALLERY_LOG"
+
 # ── Output gallery URL ───────────────────────────────────────────────────────
 
 echo ""
-echo "Gallery available at: https://${REMOTE_DOMAIN}/${GALLERY_NAME}"
+echo "Gallery available at: ${GALLERY_URL}"
 echo "Username: $USERNAME"
 echo "Password: $PASSWORD"
