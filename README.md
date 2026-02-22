@@ -46,7 +46,7 @@ sudo make uninstall
 You can also run the script directly from the repo without installing:
 
 ```sh
-./gallery_generator.sh <folder_path> <username> <password>
+./gallery_generator.sh <folder_path> <gallery_name> <username> <password>
 ```
 
 ## Configuration
@@ -98,6 +98,19 @@ export GALLERY_TIP_URL="https://account.venmo.com/u/yourname"
 gallery_generator ./wedding-photos smith-wedding viewer pass123
 ```
 
+## Gallery Log
+
+Every successful deploy is recorded in `~/.gallery_generator.log` with the date, URL, username, and password. This makes it easy to look up credentials later:
+
+```sh
+cat ~/.gallery_generator.log
+```
+
+```
+2026-02-20  https://photos.example.com/vacation-2026  guest  secretpass
+2026-02-20  https://photos.example.com/wedding-pics   viewer pass123
+```
+
 ## How It Works
 
 1. Validates environment variables, arguments, and dependencies
@@ -107,7 +120,8 @@ gallery_generator ./wedding-photos smith-wedding viewer pass123
 5. Creates `.htpasswd` and `.htaccess` files for password protection
 6. Deploys everything to the remote server via rsync
 7. Cleans up local generated files
-8. Prints the gallery URL with credentials
+8. Logs the gallery URL and credentials to `~/.gallery_generator.log`
+9. Prints the gallery URL with credentials
 
 ## License
 
